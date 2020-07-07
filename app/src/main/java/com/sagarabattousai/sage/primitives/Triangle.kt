@@ -2,6 +2,7 @@ package com.sagarabattousai.sage.primitives
 
 import android.content.res.Resources
 import android.opengl.GLES30
+import com.sagarabattousai.sage.Colour
 import com.sagarabattousai.sage.R
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -14,20 +15,18 @@ const val SIZEOF_FLOAT = 4
 const val cos30: Float = 0.86602540378f
 
 var triangleCoords = floatArrayOf(
-     0.0f,  cos30/2, 0.0f,
-    -0.5f, -cos30/2, 1.0f,
-     0.5f, -cos30/2, 0.2f
+    0.0f, cos30 / 2, 0.0f,
+    -0.5f, -cos30 / 2, 1.0f,
+    0.5f, -cos30 / 2, 0.2f
 )
 
-class Triangle(resourcer: Resources): Mesh(resourcer) {
+class Triangle(resourcer: Resources) : Mesh(resourcer) {
 
     private val vertexShaderCode = R.raw.triangle_vertex_shader
 
     private val fragmentShaderCode = R.raw.triangle_frag_shader
 
     private var program: Int
-
-    private var vPMatrixHandle: Int = 0
 
     init {
         val vertexShader: Int = loadVertexShader(vertexShaderCode)
@@ -44,8 +43,9 @@ class Triangle(resourcer: Resources): Mesh(resourcer) {
     }
 
 
-    val colour = floatArrayOf(0.6367f, 0.7695f, 0.222656f, 1.0f)
+    private val colour = Colour(105, 80, 255, 255).toFloatArray()//floatArrayOf(0.6367f, 0.7695f, 0.222656f, 1.0f)
 
+    //TODO("Change To Val?")
     private var vertexBuffer: FloatBuffer =
         ByteBuffer.allocateDirect(triangleCoords.size * SIZEOF_FLOAT).run {
             order(ByteOrder.nativeOrder())
@@ -56,11 +56,22 @@ class Triangle(resourcer: Resources): Mesh(resourcer) {
                 position(0)
             }
         }
+/*
+    private var vboHandle: Int =
+        IntArray(1).run {
+            GLES30.glGenBuffers(1, this, 0)
 
+            val vbo = this[0]
 
-    private var positionHandle: Int = 0
+            GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, vbo)
 
-    private var colourHandle: Int = 0
+            GLES30.glBufferData(vbo, triangleCoords.size * SIZEOF_FLOAT, vertexBuffer, GLES30.GL_DYNAMIC_DRAW)
+
+            vbo
+        }
+
+ */
+
 
     private val vertexCount: Int = triangleCoords.size / COORDS_PER_VERTEX
 
@@ -69,34 +80,34 @@ class Triangle(resourcer: Resources): Mesh(resourcer) {
     fun draw(mvpMatrix: FloatArray) {
         GLES30.glUseProgram(program)
 
-        positionHandle = GLES30.glGetAttribLocation(program, "vPosition").also {
 
-            GLES30.glEnableVertexAttribArray(it)
+        GLES30.glEnableVertexAttribArray(vPositionHandle)
 
-            GLES30.glVertexAttribPointer(
-                it,
-                COORDS_PER_VERTEX,
-                GLES30.GL_FLOAT,
-                false,
-                vertexStride,
-                vertexBuffer
-            )
+        GLES30.glVertexAttribPointer(
+            vPositionHandle,
+            COORDS_PER_VERTEX,
+            GLES30.GL_FLOAT,
+            false,
+            vertexStride,
+            vertexBuffer
+        )
 
-            colourHandle = GLES30.glGetUniformLocation(program, "vColour").also { cHandle ->
-                GLES30.glUniform4fv(cHandle, 1, colour, 0)
-            }
+        GLES30.glUniform4fv(vColourHandle, 1, colour, 0)
 
-            vPMatrixHandle = GLES30.glGetUniformLocation(program, "uMVPMatrix")
+        GLES30.glUniformMatrix4fv(uMVPMatrixHandle, 1, false, mvpMatrix, 0)
 
-            GLES30.glUniformMatrix4fv(vPMatrixHandle, 1, false, mvpMatrix, 0)
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, vertexCount)
 
-            GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, vertexCount)
+        GLES30.glDisableVertexAttribArray(vPositionHandle)
 
-            GLES30.glDisableVertexAttribArray(it)
-        }
     }
 
+    companion object {
+        private const val vPositionHandle: Int = 0
+        private const val uMVPMatrixHandle: Int = 1
+        private const val vColourHandle: Int = 0
 
+    }
 
 
 }
