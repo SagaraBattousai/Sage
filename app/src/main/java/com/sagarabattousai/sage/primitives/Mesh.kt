@@ -2,6 +2,7 @@ package com.sagarabattousai.sage.primitives
 
 import android.content.res.Resources
 import android.opengl.GLES30
+import android.util.Log
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -36,11 +37,26 @@ abstract class Mesh(private val resourcer: Resources) {
 
     //May need to un-privatise
     private fun compileShader(type: Int, shaderCode: String): Int {
-        return GLES30.glCreateShader(type).also { shader ->
+
+        val compiledShader = GLES30.glCreateShader(type).also { shader ->
 
             GLES30.glShaderSource(shader, shaderCode)
             GLES30.glCompileShader(shader)
         }
+
+        val compileStatus = IntArray(1)
+
+        GLES30.glGetShaderiv(compiledShader, GLES30.GL_COMPILE_STATUS, compileStatus, 0)
+
+        Log.d(LOG_TAG, "${compileStatus[0]}, ${GLES30.glGetString(GLES30.GL_SHADING_LANGUAGE_VERSION)}")
+
+
+        return compiledShader
+    }
+
+
+    companion object {
+        private const val LOG_TAG = "MESH_LOG_TAG"
     }
 
 }

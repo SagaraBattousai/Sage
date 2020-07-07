@@ -15,8 +15,8 @@ const val cos30: Float = 0.86602540378f
 
 var triangleCoords = floatArrayOf(
      0.0f,  cos30/2, 0.0f,
-    -1.0f, -cos30/2, 0.0f,
-     1.0f, -cos30/2, 0.0f
+    -0.5f, -cos30/2, 1.0f,
+     0.5f, -cos30/2, 0.2f
 )
 
 class Triangle(resourcer: Resources): Mesh(resourcer) {
