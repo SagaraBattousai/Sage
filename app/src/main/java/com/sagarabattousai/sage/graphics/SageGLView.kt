@@ -1,9 +1,8 @@
-package com.sagarabattousai.sage
+package com.sagarabattousai.sage.graphics
 
 import android.content.Context
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
-import android.util.Log
 import android.view.MotionEvent
 
 private const val TOUCH_SCALE_FACTOR: Float = 180.0f / 320f

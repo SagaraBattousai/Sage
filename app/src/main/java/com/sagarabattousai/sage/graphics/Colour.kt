@@ -1,4 +1,4 @@
-package com.sagarabattousai.sage
+package com.sagarabattousai.sage.graphics
 
 import java.lang.NumberFormatException
 import kotlin.reflect.KProperty
@@ -8,10 +8,18 @@ private const val FLOAT_SCALE = 255.0f
 
 class Colour(private val mRed: Int, private val mGreen: Int, private val mBlue: Int, private val mAlpha: Int) {
 
-    var red:   Int by ColourDelegate(mRed)
-    var green: Int by ColourDelegate(mGreen)
-    var blue:  Int by ColourDelegate(mBlue)
-    var alpha: Int by ColourDelegate(mAlpha)
+    var red:   Int by ColourDelegate(
+        mRed
+    )
+    var green: Int by ColourDelegate(
+        mGreen
+    )
+    var blue:  Int by ColourDelegate(
+        mBlue
+    )
+    var alpha: Int by ColourDelegate(
+        mAlpha
+    )
 
     //Copy Constructor
     constructor(other: Colour) : this(
@@ -29,7 +37,13 @@ class Colour(private val mRed: Int, private val mGreen: Int, private val mBlue: 
                 ((colour and 0x000000FF.toInt()))
             )
 
-    constructor(colour: String) : this(colour.toColour() ?: Colour(0, 0, 0, 1))
+    constructor(colour: String) : this(colour.toColour() ?: Colour(
+        0,
+        0,
+        0,
+        1
+    )
+    )
 
     fun toFloatArray(): FloatArray {
         val fRed:   Float = red.toFloat()   / FLOAT_SCALE
@@ -62,7 +76,8 @@ class Colour(private val mRed: Int, private val mGreen: Int, private val mBlue: 
 
 }
 
-fun Int.toColour(): Colour = Colour(this)
+fun Int.toColour(): Colour =
+    Colour(this)
 
 fun String.toColour(): Colour? {
     if (!this.startsWith("#")) return null
@@ -78,6 +93,11 @@ fun String.toColour(): Colour? {
                 }
             }
 
-    return Colour(colourList[0], colourList[1], colourList[2], colourList[3])
+    return Colour(
+        colourList[0],
+        colourList[1],
+        colourList[2],
+        colourList[3]
+    )
 
 }

@@ -1,16 +1,14 @@
-package com.sagarabattousai.sage.primitives
+package com.sagarabattousai.sage.graphics.primitives
 
 import android.content.res.Resources
 import android.opengl.GLES30
-import com.sagarabattousai.sage.Colour
 import com.sagarabattousai.sage.R
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
+import com.sagarabattousai.sage.graphics.Colour
+import com.sagarabattousai.sage.graphics.toFloatBuffer
 import java.nio.FloatBuffer
 
 
 const val COORDS_PER_VERTEX = 3
-const val SIZEOF_FLOAT = 4
 
 const val cos30: Float = 0.86602540378f
 
@@ -22,40 +20,21 @@ var triangleCoords = floatArrayOf(
 
 class Triangle(resourcer: Resources) : Mesh(resourcer) {
 
-    private val vertexShaderCode = R.raw.triangle_vertex_shader
+    private val vertexShader = compileVertexShader(R.raw.triangle_vertex_shader)
 
-    private val fragmentShaderCode = R.raw.triangle_frag_shader
+    private val fragmentShader = compileFragmentShader(R.raw.triangle_frag_shader)
 
-    private var program: Int
+    private var program: Int = linkShaders(vertexShader, fragmentShader)
 
-    init {
-        val vertexShader: Int = loadVertexShader(vertexShaderCode)
+    private val colour = Colour(
+        105,
+        80,
+        255,
+        255
+    ).toFloatArray()//floatArrayOf(0.6367f, 0.7695f, 0.222656f, 1.0f)
 
-        val fragmentShader: Int = loadFragmentShader(fragmentShaderCode)
+    private val vertexBuffer: FloatBuffer = triangleCoords.toFloatBuffer()
 
-        program = GLES30.glCreateProgram().also {
-            GLES30.glAttachShader(it, vertexShader)
-
-            GLES30.glAttachShader(it, fragmentShader)
-
-            GLES30.glLinkProgram(it)
-        }
-    }
-
-
-    private val colour = Colour(105, 80, 255, 255).toFloatArray()//floatArrayOf(0.6367f, 0.7695f, 0.222656f, 1.0f)
-
-    //TODO("Change To Val?")
-    private var vertexBuffer: FloatBuffer =
-        ByteBuffer.allocateDirect(triangleCoords.size * SIZEOF_FLOAT).run {
-            order(ByteOrder.nativeOrder())
-
-            asFloatBuffer().apply {
-                put(triangleCoords)
-
-                position(0)
-            }
-        }
 /*
     private var vboHandle: Int =
         IntArray(1).run {
