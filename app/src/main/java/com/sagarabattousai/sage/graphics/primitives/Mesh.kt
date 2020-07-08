@@ -16,11 +16,23 @@ abstract class Mesh(private val resourcer: Resources) {
 
     fun compileFragmentShader(shaderID: Int): Int = loadShader(GLES30.GL_FRAGMENT_SHADER, shaderID)
 
-    fun linkShaders(vararg shaders: Int): Int =
-        GLES30.glCreateProgram().also {
+    fun linkShaders(vararg shaders: Int): Int {
+        val program: Int = GLES30.glCreateProgram().also {
             shaders.forEach { shader -> GLES30.glAttachShader(it, shader) }
             GLES30.glLinkProgram(it)
         }
+
+        shaders.forEach { GLES30.glDeleteShader(it) }
+
+        val linkStatus = glGetProgramiv(program, GLES30.GL_LINK_STATUS)
+
+        if(linkStatus == 0) {
+            Log.e(LOG_TAG, GLES30.glGetProgramInfoLog(program))
+            exitProcess(SHADER_COMPILE_ERROR_CODE)
+        }
+
+        return program
+    }
 
 
     private fun loadShader(type: Int, shaderID: Int): Int {
@@ -53,16 +65,14 @@ abstract class Mesh(private val resourcer: Resources) {
             GLES30.glCompileShader(shader)
         }
 
-        val compileStatus = IntArray(1)
-
-        GLES30.glGetShaderiv(compiledShader, GLES30.GL_COMPILE_STATUS, compileStatus, 0)
+        val compileStatus: Int = glGetShaderiv(compiledShader, GLES30.GL_COMPILE_STATUS)
 
         Log.d(
             LOG_TAG,
-            "${compileStatus[0]}, ${GLES30.glGetString(GLES30.GL_SHADING_LANGUAGE_VERSION)}"
+            "${compileStatus}, ${GLES30.glGetString(GLES30.GL_SHADING_LANGUAGE_VERSION)}"
         )
 
-        if (compileStatus[0] == 0) {
+        if (compileStatus == 0) {
             Log.e(LOG_TAG, GLES30.glGetShaderInfoLog(compiledShader))
             exitProcess(SHADER_COMPILE_ERROR_CODE)
         }
@@ -76,4 +86,15 @@ abstract class Mesh(private val resourcer: Resources) {
         private const val LOG_TAG = "MESH_LOG_TAG"
     }
 
+    private fun glGetShaderiv(shader: Int, pname: Int): Int =
+        IntArray(1).let { arr ->
+            GLES30.glGetShaderiv(shader, pname, arr, 0)
+            return arr[0]
+        }
+
+    private fun glGetProgramiv(shader: Int, pname: Int): Int =
+        IntArray(1).let { arr ->
+            GLES30.glGetProgramiv(shader, pname, arr, 0)
+            return arr[0]
+        }
 }

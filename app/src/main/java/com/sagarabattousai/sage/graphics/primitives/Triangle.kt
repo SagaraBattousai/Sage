@@ -4,6 +4,7 @@ import android.content.res.Resources
 import android.opengl.GLES30
 import com.sagarabattousai.sage.R
 import com.sagarabattousai.sage.graphics.Colour
+import com.sagarabattousai.sage.graphics.SIZEOF_FLOAT
 import com.sagarabattousai.sage.graphics.toFloatBuffer
 import java.nio.FloatBuffer
 
@@ -35,32 +36,29 @@ class Triangle(resourcer: Resources) : Mesh(resourcer) {
 
     private val vertexBuffer: FloatBuffer = triangleCoords.toFloatBuffer()
 
-/*
-    private var vboHandle: Int =
-        IntArray(1).run {
+
+    private val vboHandle: Int =
+        with(IntArray(1)) {
             GLES30.glGenBuffers(1, this, 0)
 
             val vbo = this[0]
 
             GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, vbo)
 
-            GLES30.glBufferData(vbo, triangleCoords.size * SIZEOF_FLOAT, vertexBuffer, GLES30.GL_DYNAMIC_DRAW)
+            GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, triangleCoords.size * SIZEOF_FLOAT, vertexBuffer, GLES30.GL_DYNAMIC_DRAW)
 
             vbo
         }
-
- */
-
 
     private val vertexCount: Int = triangleCoords.size / COORDS_PER_VERTEX
 
     private val vertexStride: Int = COORDS_PER_VERTEX * SIZEOF_FLOAT
 
+
+
+
     fun draw(mvpMatrix: FloatArray) {
         GLES30.glUseProgram(program)
-
-
-        GLES30.glEnableVertexAttribArray(vPositionHandle)
 
         GLES30.glVertexAttribPointer(
             vPositionHandle,
@@ -68,8 +66,11 @@ class Triangle(resourcer: Resources) : Mesh(resourcer) {
             GLES30.GL_FLOAT,
             false,
             vertexStride,
-            vertexBuffer
+            0
         )
+
+        GLES30.glEnableVertexAttribArray(vPositionHandle)
+
 
         GLES30.glUniform4fv(vColourHandle, 1, colour, 0)
 
