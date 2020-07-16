@@ -1,9 +1,11 @@
 package com.sagarabattousai.sage.graphics.primitives
 
 import android.opengl.GLES30
+import android.opengl.GLUtils
 import com.sagarabattousai.sage.R
 import com.sagarabattousai.sage.graphics.Colour
 import com.sagarabattousai.sage.graphics.SIZEOF_FLOAT
+import com.sagarabattousai.sage.graphics.resourcers.BitmapResourcer
 import com.sagarabattousai.sage.graphics.resourcers.ShaderResourcer
 import com.sagarabattousai.sage.graphics.shaders.Shader
 import com.sagarabattousai.sage.graphics.toFloatBuffer
@@ -81,16 +83,16 @@ private const val H = 7
 
 val cubeIndices = intArrayOf(
     A, B, C,
-    A, C, D,
-
-    D, C, G,
-    G, H, D,
+    C, D, A,
 
     H, G, F,
     H, F, E,
 
     E, F, A,
-    A, B, F,
+    A, F, B,
+
+    D, C, G,
+    G, H, D,
 
     E, A, D,
     D, H, E,
@@ -146,7 +148,7 @@ val normalCoords = floatArrayOf(
 )
 
 @Suppress("PropertyName", "PrivatePropertyName")
-class Cube(resourcer: ShaderResourcer) {
+class Cube(resourcer: ShaderResourcer, textureResourcer: BitmapResourcer) {
 
 
     private val program: Shader = Shader.ShaderBuilder(resourcer)
@@ -157,7 +159,7 @@ class Cube(resourcer: ShaderResourcer) {
 
     private val colour = Colour(255, 128, 79, 255).toFloatArray()
 
-    private val handles = IntArray(5)
+    private val handles = IntArray(6)
 
     private val VBO: Int = with(handles) {
         GLES30.glGenBuffers(1, this, VBO_OFFSET)
@@ -209,6 +211,30 @@ class Cube(resourcer: ShaderResourcer) {
     private val vertexCount: Int = 36//triangleCoords.size / COORDS_PER_VERTEX
 
 
+    private val texture = with(handles) {
+
+        GLES30.glGenTextures(1, this, TEX_OFFSET)
+
+           val bitmap = textureResourcer.getResource(R.raw.awesomeface);
+
+            // Bind to the texture in OpenGL
+            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, this[TEX_OFFSET]);
+
+            // Set filtering
+            //GLES30.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
+            //GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+
+            // Load the bitmap into the bound texture.
+            GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
+
+            // Recycle the bitmap, since its data has been loaded into OpenGL.
+            bitmap.recycle();
+
+
+        this[TEX_OFFSET]
+    }
+
+
     init {
         GLES30.glBindVertexArray(cubeVAO)
 
@@ -238,8 +264,15 @@ class Cube(resourcer: ShaderResourcer) {
 
         GLES30.glEnableVertexAttribArray(normalVectorHandle)
 
+        GLES30.glVertexAttribPointer(8, 2, GLES30.GL_FLOAT, false, 2*4, floatArrayOf(0.0f,1.0f, 0.0f,0.0f, 1.0f,0.0f,1.0f,1.0f).toFloatBuffer())
+
+        GLES30.glEnableVertexAttribArray(8)
+
+
 
         GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, EBO)
+        GLES30.glBindBuffer(GLES30.GL_TEXTURE_2D, texture)
+
 
         GLES30.glBindVertexArray(0) //Unbind VAO
 
@@ -289,6 +322,7 @@ class Cube(resourcer: ShaderResourcer) {
         private const val CUBE_VAO_OFFSET: Int = 2
         private const val LIGHT_VAO_OFFSET: Int = 3
         private const val EBO_OFFSET: Int = 4
+        private const val TEX_OFFSET: Int = 5
 
 
         //private const val EBO_OFFSET: Int = 2

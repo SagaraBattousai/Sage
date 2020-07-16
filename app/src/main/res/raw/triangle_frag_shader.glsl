@@ -12,6 +12,11 @@ layout (location = 7) uniform vec3 lightPosition;
 in vec3 fragNormal;
 in vec3 fragPosition;
 
+in vec2 TexCoord;
+
+layout (location = 9) uniform sampler2D ourTexture;
+
+
 
 void main() {
     /*
@@ -27,6 +32,6 @@ void main() {
     vec3 visualColour = (ambiant + diffuse) * fragNormal;//vec3(objectColour);
     fragColour = vec4(visualColour, 1.0);
     */
-    vec3 fragNorma = (vec3(1.0,1.0,1.0) + fragNormal) / 2.0;
-    fragColour = vec4(fragNorma.x, fragNorma.y, fragNorma.z, 1.0);
+    //vec3 fragNorma = (fragNormal * fragNormal);
+    fragColour = texture(ourTexture, TexCoord);//vec4(0.5, 0.7, 1.0, 1.0);//vec4(fragNorma.x, fragNorma.y, fragNorma.z, 1.0);
 }

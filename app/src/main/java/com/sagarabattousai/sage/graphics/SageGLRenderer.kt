@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.core.os.persistableBundleOf
 import com.sagarabattousai.sage.graphics.primitives.Cube
 import com.sagarabattousai.sage.graphics.primitives.Triangle
+import com.sagarabattousai.sage.graphics.resourcers.BitmapResourcer
 import com.sagarabattousai.sage.graphics.resourcers.ShaderResourcer
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -25,7 +26,7 @@ class SageGLRenderer(private val context: Context): GLSurfaceView.Renderer {
 
     private val modelMatrix = FloatArray(16).apply {
         Matrix.setIdentityM(this, 0)
-        Matrix.scaleM(this, 0, MODEL_SCALE_X, MODEL_SCALE_Y, 1.0f)
+        //Matrix.scaleM(this, 0, MODEL_SCALE_X, MODEL_SCALE_Y, 1.0f)
         //Matrix.rotateM(this, 0, 17.0f, 0.0f, 1.0f, 1.0f)
         //Matrix.translateM(this, 0, 0.0f, 0.0f, MODEL_TRANSLATION_Z)
     }
@@ -42,7 +43,7 @@ class SageGLRenderer(private val context: Context): GLSurfaceView.Renderer {
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         GLES30.glClearColor(0.0f, 0.25f, 0.37f, 1.0f)
 
-        cube = Cube(ShaderResourcer(context.resources))
+        cube = Cube(ShaderResourcer(context.resources), BitmapResourcer(context.resources))
 
     }
 
