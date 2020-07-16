@@ -5,8 +5,28 @@ precision mediump float;
 
 out vec4 fragColour;
 
-layout (location = 0) uniform vec4 vColour;
+layout (location = 5) uniform vec4 objectColour;
+layout (location = 6) uniform vec3 lightColour;
+layout (location = 7) uniform vec3 lightPosition;
+
+in vec3 fragNormal;
+in vec3 fragPosition;
+
 
 void main() {
-    fragColour = vColour;
+    /*
+    float ambiantStrength = 0.2;
+    vec3 ambiant = ambiantStrength * lightColour;
+
+    vec3 norm = normalize(fragNormal);
+    vec3 lightDir = normalize(lightPosition - fragPosition);
+
+    vec3 diffuse = max(dot(norm, lightDir), 0.0) * lightColour;
+
+
+    vec3 visualColour = (ambiant + diffuse) * fragNormal;//vec3(objectColour);
+    fragColour = vec4(visualColour, 1.0);
+    */
+    vec3 fragNorma = (vec3(1.0,1.0,1.0) + fragNormal) / 2.0;
+    fragColour = vec4(fragNorma.x, fragNorma.y, fragNorma.z, 1.0);
 }

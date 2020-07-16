@@ -18,7 +18,7 @@ class SageGLView(context: Context) : GLSurfaceView(context) {
 
         setRenderer(renderer)
 
-        renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
+        renderMode = RENDERMODE_WHEN_DIRTY
 
         GLES30.glEnable(GLES30.GL_DEPTH_TEST)
 
@@ -31,6 +31,11 @@ class SageGLView(context: Context) : GLSurfaceView(context) {
 
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+
+        requestRender()
+        return true
+
+        /*
 
         val x: Float = event.x
         val y: Float = event.y
@@ -57,7 +62,7 @@ class SageGLView(context: Context) : GLSurfaceView(context) {
         previousX = x
         previousY = y
         return true
-
+*/
     }
 
 }

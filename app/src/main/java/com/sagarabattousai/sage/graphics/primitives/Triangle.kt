@@ -1,93 +1,114 @@
 package com.sagarabattousai.sage.graphics.primitives
 
-import android.content.res.Resources
 import android.opengl.GLES30
 import com.sagarabattousai.sage.R
 import com.sagarabattousai.sage.graphics.Colour
 import com.sagarabattousai.sage.graphics.SIZEOF_FLOAT
+import com.sagarabattousai.sage.graphics.resourcers.ShaderResourcer
+import com.sagarabattousai.sage.graphics.shaders.Shader
+import com.sagarabattousai.sage.graphics.shaders.Shader.ShaderBuilder
 import com.sagarabattousai.sage.graphics.toFloatBuffer
-import java.nio.FloatBuffer
 
-
-const val COORDS_PER_VERTEX = 3
-
-const val cos30: Float = 0.86602540378f
 
 var triangleCoords = floatArrayOf(
-    0.0f, cos30 / 2, 0.0f,
-    -0.5f, -cos30 / 2, 1.0f,
-    0.5f, -cos30 / 2, 0.2f
+    0.0f, 10.0f, 0.0f,
+    -10.0f, -10.0f, 0.0f,
+    10.0f, -10.0f, 0.0f
 )
 
-class Triangle(resourcer: Resources) : Mesh(resourcer) {
+@Suppress("PropertyName", "PrivatePropertyName")
+class Triangle(resourcer: ShaderResourcer) {
 
-    private val vertexShader = compileVertexShader(R.raw.triangle_vertex_shader)
-
-    private val fragmentShader = compileFragmentShader(R.raw.triangle_frag_shader)
-
-    private var program: Int = linkShaders(vertexShader, fragmentShader)
-
-    private val colour = Colour(
-        105,
-        80,
-        255,
-        255
-    ).toFloatArray()//floatArrayOf(0.6367f, 0.7695f, 0.222656f, 1.0f)
-
-    private val vertexBuffer: FloatBuffer = triangleCoords.toFloatBuffer()
+    private val program: Shader = ShaderBuilder(resourcer)
+        .withVertexShader(R.raw.triangle_vertex_shader)
+        .withFragmentShader(R.raw.triangle_frag_shader)
+        .build()
 
 
-    private val vboHandle: Int =
-        with(IntArray(1)) {
-            GLES30.glGenBuffers(1, this, 0)
+    private val colour = Colour(105, 80, 255, 255).toFloatArray()
 
-            val vbo = this[0]
+    private val handles = IntArray(3)
 
-            GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, vbo)
+    private val VBO: Int = with(handles) {
+        GLES30.glGenBuffers(1, this, VBO_OFFSET)
+        this[VBO_OFFSET]
+    }
 
-            GLES30.glBufferData(GLES30.GL_ARRAY_BUFFER, triangleCoords.size * SIZEOF_FLOAT, vertexBuffer, GLES30.GL_DYNAMIC_DRAW)
+    private val VAO: Int = with(handles) {
+        GLES30.glGenVertexArrays(1, this, VAO_OFFSET)
+        this[VAO_OFFSET]
+    }
 
-            vbo
-        }
+    /*
+    private val EBO: Int = with(handles) {
+        GLES30.glGenBuffers(1, this, EBO_OFFSET)
+        this[EBO_OFFSET]
+    }
+    */
 
     private val vertexCount: Int = triangleCoords.size / COORDS_PER_VERTEX
 
-    private val vertexStride: Int = COORDS_PER_VERTEX * SIZEOF_FLOAT
 
-
-
-
-    fun draw(mvpMatrix: FloatArray) {
-        GLES30.glUseProgram(program)
+    init {
+        GLES30.glBindVertexArray(VAO)
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, VBO)
+        GLES30.glBufferData(
+            GLES30.GL_ARRAY_BUFFER, triangleCoords.size * SIZEOF_FLOAT,
+            triangleCoords.toFloatBuffer(), GLES30.GL_DYNAMIC_DRAW
+        )
 
         GLES30.glVertexAttribPointer(
             vPositionHandle,
             COORDS_PER_VERTEX,
             GLES30.GL_FLOAT,
             false,
-            vertexStride,
+            VERTEX_STRIDE,
             0
         )
 
         GLES30.glEnableVertexAttribArray(vPositionHandle)
 
+        GLES30.glBindVertexArray(0) //Unbind VAO
+    }
+
+
+    fun draw(modelMatrix: FloatArray, viewMatrix: FloatArray, projectionMatrix: FloatArray) {
+
+        program.use()
+
+        GLES30.glBindVertexArray(VAO)
 
         GLES30.glUniform4fv(vColourHandle, 1, colour, 0)
 
-        GLES30.glUniformMatrix4fv(uMVPMatrixHandle, 1, false, mvpMatrix, 0)
+        GLES30.glUniformMatrix4fv(viewHandle, 1, false, viewMatrix, 0)
+
+        GLES30.glUniformMatrix4fv(projectionHandle, 1, false, projectionMatrix, 0)
+
+        GLES30.glUniformMatrix4fv(modelHandle, 1, false, modelMatrix, 0)
 
         GLES30.glDrawArrays(GLES30.GL_TRIANGLES, 0, vertexCount)
 
+        GLES30.glBindVertexArray(0)
+
+        //Do I still need?
         GLES30.glDisableVertexAttribArray(vPositionHandle)
+
 
     }
 
     companion object {
         private const val vPositionHandle: Int = 0
-        private const val uMVPMatrixHandle: Int = 1
+        private const val modelHandle: Int = 1
+        private const val viewHandle: Int = 2
+        private const val projectionHandle: Int = 3
         private const val vColourHandle: Int = 0
+        private const val VBO_OFFSET: Int = 0
+        private const val VAO_OFFSET: Int = 1
+
+        //private const val EBO_OFFSET: Int = 2
+        private const val COORDS_PER_VERTEX = 3
+        private const val VERTEX_STRIDE: Int = COORDS_PER_VERTEX * SIZEOF_FLOAT
+
 
     }
-
-
 }
