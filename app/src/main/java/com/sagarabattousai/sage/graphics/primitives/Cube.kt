@@ -80,7 +80,7 @@ private const val H = 7
    B-------C
 
 */
-
+/*
 val cubeIndices = intArrayOf(
     A, B, C,
     C, D, A,
@@ -99,7 +99,28 @@ val cubeIndices = intArrayOf(
 
     F, G, C,
     C, B, F
+)*/
+
+val cubeIndices = intArrayOf(
+    A, B, C,
+    C, D, A,
+
+    F, G, H,
+    H, E, F,
+
+    E, F, A,
+    A, F, B,
+
+    D, C, G,
+    G, H, D,
+
+    E, A, D,
+    D, H, E,
+
+    F, G, C,
+    C, B, F
 )
+
 
 /*
 
@@ -147,6 +168,15 @@ val normalCoords = floatArrayOf(
     0.0f, -1.0f, 0.0f  //C
 )
 
+val tco = floatArrayOf(
+    0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+    0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+    0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+    0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+    0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+    0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f
+)
+
 @Suppress("PropertyName", "PrivatePropertyName")
 class Cube(resourcer: ShaderResourcer, textureResourcer: BitmapResourcer) {
 
@@ -159,7 +189,7 @@ class Cube(resourcer: ShaderResourcer, textureResourcer: BitmapResourcer) {
 
     private val colour = Colour(255, 128, 79, 255).toFloatArray()
 
-    private val handles = IntArray(6)
+    private val handles = IntArray(7)
 
     private val VBO: Int = with(handles) {
         GLES30.glGenBuffers(1, this, VBO_OFFSET)
@@ -189,11 +219,30 @@ class Cube(resourcer: ShaderResourcer, textureResourcer: BitmapResourcer) {
         this[NORMAL_VBO_OFFSET]
     }
 
+    private val tcVBO = with(handles) {
+        GLES30.glGenBuffers(1, this, TEX_COORDS_OFFSET)
+
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, this[TEX_COORDS_OFFSET])
+        GLES30.glBufferData(
+            GLES30.GL_ARRAY_BUFFER, tco.size * SIZEOF_FLOAT,
+            tco.toFloatBuffer(), GLES30.GL_STATIC_DRAW
+        )
+
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, 0)
+
+        this[TEX_COORDS_OFFSET]
+    }
+
     private val EBO: Int = with(handles) {
         GLES30.glGenBuffers(1, this, EBO_OFFSET)
 
         GLES30.glBindBuffer(GLES30.GL_ELEMENT_ARRAY_BUFFER, this[EBO_OFFSET])
-        GLES30.glBufferData(GLES30.GL_ELEMENT_ARRAY_BUFFER, cubeIndices.size * 4, cubeIndices.toIntBuffer(), GLES30.GL_STATIC_DRAW)
+        GLES30.glBufferData(
+            GLES30.GL_ELEMENT_ARRAY_BUFFER,
+            cubeIndices.size * 4,
+            cubeIndices.toIntBuffer(),
+            GLES30.GL_STATIC_DRAW
+        )
 
         this[EBO_OFFSET]
     }
@@ -215,20 +264,31 @@ class Cube(resourcer: ShaderResourcer, textureResourcer: BitmapResourcer) {
 
         GLES30.glGenTextures(1, this, TEX_OFFSET)
 
-           val bitmap = textureResourcer.getResource(R.raw.awesomeface);
+        val bitmap = textureResourcer.getResource(R.raw.awesomeface);
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0);
 
-            // Bind to the texture in OpenGL
-            GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, this[TEX_OFFSET]);
+        // Bind to the texture in OpenGL
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, this[TEX_OFFSET]);
 
-            // Set filtering
-            //GLES30.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
-            //GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_NEAREST);
+        // Set filtering
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_MIN_FILTER,
+            GLES30.GL_NEAREST
+        );
+        GLES30.glTexParameteri(
+            GLES30.GL_TEXTURE_2D,
+            GLES30.GL_TEXTURE_MAG_FILTER,
+            GLES30.GL_NEAREST
+        );
 
-            // Load the bitmap into the bound texture.
-            GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
+        // Load the bitmap into the bound texture.
+        GLUtils.texImage2D(GLES30.GL_TEXTURE_2D, 0, bitmap, 0);
+        GLES30.glGenerateMipmap(GLES30.GL_TEXTURE_2D)
 
-            // Recycle the bitmap, since its data has been loaded into OpenGL.
-            bitmap.recycle();
+
+        // Recycle the bitmap, since its data has been loaded into OpenGL.
+        bitmap.recycle();
 
 
         this[TEX_OFFSET]
@@ -264,7 +324,21 @@ class Cube(resourcer: ShaderResourcer, textureResourcer: BitmapResourcer) {
 
         GLES30.glEnableVertexAttribArray(normalVectorHandle)
 
-        GLES30.glVertexAttribPointer(8, 2, GLES30.GL_FLOAT, false, 2*4, floatArrayOf(0.0f,1.0f, 0.0f,0.0f, 1.0f,0.0f,1.0f,1.0f).toFloatBuffer())
+        GLES30.glBindBuffer(GLES30.GL_ARRAY_BUFFER, tcVBO)
+
+        GLES30.glVertexAttribPointer(
+            8, 2, GLES30.GL_FLOAT, false, 2 * 4, 0)
+            /*floatArrayOf(
+                0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f
+            ).toFloatBuffer()
+        )
+
+             */
 
         GLES30.glEnableVertexAttribArray(8)
 
@@ -298,7 +372,9 @@ class Cube(resourcer: ShaderResourcer, textureResourcer: BitmapResourcer) {
 
         GLES30.glUniform3fv(6, 1, floatArrayOf(1.0f, 1.0f, 1.0f), 0)
 
-        GLES30.glUniform3fv(7, 1, floatArrayOf(0.0f, 100.0f, 0.0f), 0)
+        GLES30.glUniform3fv(7, 1, floatArrayOf(0.0f, 5.0f, 0.0f), 0)
+
+        GLES30.glUniform1i(9, 0)
 
         GLES30.glDrawElements(GLES30.GL_TRIANGLES, 36, GLES30.GL_UNSIGNED_INT, 0)
 
@@ -323,6 +399,7 @@ class Cube(resourcer: ShaderResourcer, textureResourcer: BitmapResourcer) {
         private const val LIGHT_VAO_OFFSET: Int = 3
         private const val EBO_OFFSET: Int = 4
         private const val TEX_OFFSET: Int = 5
+        private const val TEX_COORDS_OFFSET: Int = 6
 
 
         //private const val EBO_OFFSET: Int = 2
