@@ -1,12 +1,13 @@
-package com.sagarabattousai.sage.graphics
 
+package com.sagarabattousai.sage.graphics
+/*
 import java.lang.NumberFormatException
 import kotlin.reflect.KProperty
 
 private const val HEX_RADIX = 16
 private const val FLOAT_SCALE = 255.0f
 
-class Colour(private val mRed: Int, private val mGreen: Int, private val mBlue: Int, private val mAlpha: Int) {
+class Colour(private val red: Int, private val mGreen: Int, private val mBlue: Int, private val mAlpha: Int) {
 
     var red:   Int by ColourDelegate(
         mRed
@@ -100,4 +101,4 @@ fun String.toColour(): Colour? {
         colourList[3]
     )
 
-}
+}*/

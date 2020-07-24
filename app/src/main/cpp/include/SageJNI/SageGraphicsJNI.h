@@ -1,0 +1,8 @@
+//
+// Created by james on 24/07/2020.
+//
+
+#ifndef SAGE_SAGEGRAPHICSJNI_H
+#define SAGE_SAGEGRAPHICSJNI_H
+
+#endif //SAGE_SAGEGRAPHICSJNI_H

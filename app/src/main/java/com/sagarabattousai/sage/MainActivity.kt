@@ -7,7 +7,7 @@ import com.sagarabattousai.sage.graphics.SageGLView
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var glView: GLSurfaceView
+    private lateinit var glView: SageGLView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -15,5 +15,15 @@ class MainActivity : AppCompatActivity() {
         glView = SageGLView(this)
 
         setContentView(glView)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        glView.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        glView.onResume()
     }
 }

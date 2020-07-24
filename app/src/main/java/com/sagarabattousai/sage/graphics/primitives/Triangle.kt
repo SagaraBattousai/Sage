@@ -1,10 +1,12 @@
 package com.sagarabattousai.sage.graphics.primitives
 
-import android.content.res.Resources
+/*
 import android.opengl.GLES30
 import com.sagarabattousai.sage.R
 import com.sagarabattousai.sage.graphics.Colour
 import com.sagarabattousai.sage.graphics.SIZEOF_FLOAT
+import com.sagarabattousai.sage.graphics.resourcers.ShaderResourcer
+import com.sagarabattousai.sage.graphics.shaders.Shader
 import com.sagarabattousai.sage.graphics.toFloatBuffer
 import java.nio.FloatBuffer
 
@@ -19,13 +21,12 @@ var triangleCoords = floatArrayOf(
     0.5f, -cos30 / 2, 0.2f
 )
 
-class Triangle(resourcer: Resources) : Mesh(resourcer) {
+class Triangle(resourcer: ShaderResourcer) : Mesh {
 
-    private val vertexShader = compileVertexShader(R.raw.triangle_vertex_shader)
-
-    private val fragmentShader = compileFragmentShader(R.raw.triangle_frag_shader)
-
-    private var program: Int = linkShaders(vertexShader, fragmentShader)
+    private val program: Shader = Shader.Builder(resourcer)
+        .withVertexShader(R.raw.triangle_vertex_shader)
+        .withFragmentShader(R.raw.triangle_frag_shader)
+        .build()
 
     private val colour = Colour(
         105,
@@ -57,7 +58,7 @@ class Triangle(resourcer: Resources) : Mesh(resourcer) {
 
 
 
-    fun draw(mvpMatrix: FloatArray) {
+    override fun draw(modelMatrix: FloatArray, viewMatrix: FloatArray, projectionMatrix: FloatArray) {
         GLES30.glUseProgram(program)
 
         GLES30.glVertexAttribPointer(
@@ -91,3 +92,5 @@ class Triangle(resourcer: Resources) : Mesh(resourcer) {
 
 
 }
+
+ */
